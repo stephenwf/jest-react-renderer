@@ -42,6 +42,8 @@
     "node_modules",
     "dist",
     "lib",
-    "__mocks__"
+    "__mocks__",
+    "**/*.stories.tsx",
+    "**/*.test.ts"
   ]
 }
