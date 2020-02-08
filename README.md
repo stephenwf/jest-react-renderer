@@ -1,51 +1,45 @@
-# FESK Typescript
-FESK + Typescript boilerplate. 
+# jest-react-renderer
+Write Jest tests using JSX and React, render them in the DOM and on the CLI. Test as you write your React components in the browser.  
 
-## Installation
-Change package.json:
-```json
-{
-  "name": "{PACKAGE_NAME}",
-  "main": "dist/umd/{PACKAGE_NAME}.js"
-}
+```
+yarn add jest-react-renderer
 ```
 
-## Customisations
-Some customisations.
-
-### Remove server (libraries)
-```json
-{
-  "start": "fesk-start --cjs --noServer"
-}
-```
- 
-### Storybook
-Create `FILENAME.stories.tsx`
-```typescript
+Example:
+```jsx
+// sum.test.js
 import React from 'react';
+import { Test, Expect, runTest } from 'jest-react-renderer';
 
-export default { title: 'CATEGORY LABEL| COMPONENT_NAME' };
-
-export const ExampleName: React.FC = () => {
-  return <div>Some story</div>
-};
+runTest(
+  <Test name="adds 1 + 2 to equal 3">
+    <Expect toBe={3}>{ sum(1, 2) }</Expect>
+  </Test>
+);
 ```
 
-Example of custom configuration: https://github.com/digirati-co-uk/capture-models/tree/feature/context-behaviours/.storybook
+Create a test file not tracked by Jest:
+```jsx
+import { Test, Expect } from 'jest-react-renderer';
+import { sum } from './sum';
 
-### Ports
-Package json:
-```json
-{
-  "fesk": {
-    "typescript": true,
-    "port": 5000,
-    "metalsmith": {
-      "nunjucks": {
-        "liveServerPort": 35735
-      }
-    }
-  }
-}
+export const MyTestFile = () => (
+  <Test name="adds 1 + 2 to equal 3">
+    <Expect toBe={3}>{ sum(1, 2) }</Expect>
+  </Test>
+);
 ```
+
+Then add them to jest from a `file.test.js`.
+```
+import { runTests } from 'jest-react-renderer';
+import { MyTestFile } from './my-test-file';
+
+runTests([
+  <MyTestFile />
+]);
+```
+
+This can be dropped straight into something like Storybook to have your tests alongside your documentation and examples.
+
+Internally this uses the `expect` library from Jest, so you can extend is using `expect.extend()` for other extensions.
