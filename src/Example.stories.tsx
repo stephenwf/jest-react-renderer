@@ -1,8 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Describe } from './components/Describe';
 import { Test } from './components/Test';
 import { Expect } from './components/Expect';
 import { filterFuncName, shouldReturnBoolean } from './utility';
+import { act } from 'react-test-renderer';
+import { getNodeText } from '@testing-library/react';
+import { ReactTestRenderer } from './components/ReactTestRenderer';
+import { When } from './components/When';
+import { ReactComponent } from './components/TestingLibraryReact';
 
 export default { title: 'Example' };
 
@@ -126,6 +131,79 @@ export const ShouldReturnBoolean: React.FC = () => (
           </Expect>
         ))}
       </Test>
+      <Test name="Allow variables to be passed with <When />">
+        <When test="Testing">
+          {props => {
+            return <Expect toEqual={'Testing'}>{props.test}</Expect>;
+          }}
+        </When>
+      </Test>
     </Describe>
   </div>
 );
+
+export const TestSnapshot: React.FC = () => {
+  return (
+    <Describe name="snapshot">
+      <Test name="test snapshot">
+        <Expect toMatchSnapshot>{{ test: 'testing' }}</Expect>
+      </Test>
+    </Describe>
+  );
+};
+
+const ExampleComponent: React.FC = () => {
+  const [count, setCount] = useState(0);
+
+  return (
+    <div>
+      <span>Counter: {count}</span>
+      <button onClick={() => setCount(n => n + 1)}>Increment</button>
+    </div>
+  );
+};
+
+export const TestRenderer: React.FC = () => {
+  return (
+    <Describe name="Integrations with other libraries" verbose>
+      <Test name="React test renderer">
+        <ReactTestRenderer create={<ExampleComponent />}>
+          {component => {
+            act(() => {
+              // Click twice.
+              component.root.findByType('button').props.onClick();
+              component.root.findByType('button').props.onClick();
+            });
+
+            return (
+              <Expect toEqual={'2'}>
+                {component.root.findByType('span').children[1]}
+              </Expect>
+            );
+          }}
+        </ReactTestRenderer>
+      </Test>
+
+      <Test name="React testing library">
+        <ReactComponent render={<ExampleComponent />}>
+          {async (result, fireEvent) => {
+            const button = await result.findByText('Increment');
+
+            fireEvent.click(button);
+            fireEvent.click(button);
+
+            const count = await result.findByText(/Counter: [0-9]+/);
+
+            return (
+              <>
+                <Expect toBeTruthy>{button}</Expect>
+                <Expect toBeTruthy>{count}</Expect>
+                <Expect toContain="Counter: 2">{getNodeText(count)}</Expect>
+              </>
+            );
+          }}
+        </ReactComponent>
+      </Test>
+    </Describe>
+  );
+};

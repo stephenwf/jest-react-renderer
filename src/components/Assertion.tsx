@@ -1,6 +1,8 @@
 import React, { useContext } from 'react';
 import { TestContext } from './TestContext';
 
+const noArgs = ['toBeTruthy', 'toBeFalsy', 'toMatchSnapshot'];
+
 export const Assertion: React.FC<{
   expectFunction: any;
   value: any;
@@ -11,11 +13,22 @@ export const Assertion: React.FC<{
   const { active, push } = useContext(TestContext);
 
   if (!func) {
-    return <>`missing func ${method}`</>;
+    return (
+      <>
+        missing func <strong>${method}</strong>
+      </>
+    );
   }
 
-  const functionWithValue = () =>
-    (func as (actual: any) => { pass: boolean; message: string })(value as any);
+  const functionWithValue = () => {
+    if (noArgs.indexOf(method) !== -1) {
+      return (func as any)();
+    }
+
+    return (func as (actual: any) => { pass: boolean; message: string })(
+      value as any
+    );
+  };
 
   if (active) {
     push(functionWithValue);
