@@ -15,7 +15,7 @@ export function ReactComponent(props: {
   const preview = useRef();
 
   const [inner, setInner] = useState();
-  const [error, setError] = useState();
+  const [error, setError] = useState('');
   const { active, push } = useContext(TestContext);
 
   if (active) {
@@ -31,7 +31,7 @@ export function ReactComponent(props: {
 
   useEffect(() => {
     if (!active) {
-      setError(false);
+      setError('');
       const result = props.children(
         getQueriesForElement(preview.current as any) as any,
         fireEvent
@@ -48,7 +48,7 @@ export function ReactComponent(props: {
   }
 
   if (error) {
-    return <div>{error.message}</div>;
+    return <div>{(error as any).message}</div>;
   }
 
   return (
